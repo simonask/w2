@@ -51,6 +51,7 @@ namespace wayward {
         IRequestResponder* responder = nullptr;
 
         Impl() : acceptor(service) {}
+        ~Impl();
 
         void keep_accepting();
     };
@@ -72,6 +73,14 @@ namespace wayward {
     Server::Server() : impl_(new Impl) {}
 
     Server::~Server() {}
+
+    Server::Impl::~Impl() {
+        while (!clients.empty()) {
+            auto it = clients.begin();
+            Client* client = &*it;
+            delete client;
+        }
+    }
 
     Server& Server::listen(std::string addr, unsigned int port) {
         // TODO: Add support for listening on multiple endpoints
