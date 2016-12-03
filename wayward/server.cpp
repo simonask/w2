@@ -1,4 +1,5 @@
 #include "wayward/server.hpp"
+#include "wayward/util/linklist.hpp"
 
 #include <asio.hpp>
 #include <http_parser.h>
@@ -7,20 +8,9 @@
 #include <sstream>
 
 namespace wayward {
-    struct Server::Impl {
-        asio::io_service service;
-        asio::ip::tcp::acceptor acceptor;
-        std::vector<std::unique_ptr<Client>> clients;
-        std::unique_ptr<Client> next_client;
-        IRequestResponder* responder = nullptr;
-
-        Impl() : acceptor(service) {}
-
-        void keep_accepting();
-    };
-
     struct Server::Client {
         Server::Impl& server_impl;
+        util::IntrusiveListAnchor<Client> anchor;
         asio::ip::tcp::socket socket;
         http_parser parser;
 
@@ -53,6 +43,19 @@ namespace wayward {
         static const http_parser_settings parser_settings;
     };
 
+    struct Server::Impl {
+        asio::io_service service;
+        asio::ip::tcp::acceptor acceptor;
+        util::IntrusiveList<Client, &Client::anchor> clients;
+        Client* next_client = nullptr;
+        IRequestResponder* responder = nullptr;
+
+        Impl() : acceptor(service) {}
+
+        void keep_accepting();
+    };
+
+
     const http_parser_settings Server::Client::parser_settings = {
         .on_message_begin = &Server::Client::on_message_begin,
         .on_url = &Server::Client::on_url,
@@ -71,10 +74,14 @@ namespace wayward {
     Server::~Server() {}
 
     Server& Server::listen(std::string addr, unsigned int port) {
-        // TODO: Add IPv4 support
-        impl_->acceptor.open(asio::ip::tcp::v6());
-        impl_->acceptor.bind(asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port));
+        // TODO: Add support for listening on multiple endpoints
+        auto ip_addr = asio::ip::address::from_string(addr.c_str());
+        asio::ip::tcp::endpoint endpoint(ip_addr, port);
+        impl_->acceptor.open(endpoint.protocol());
+        impl_->acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+        impl_->acceptor.bind(endpoint);
         impl_->acceptor.listen(10);
+        std::cout << "Wayward Server listening on " << impl_->acceptor.local_endpoint().address() << ":" << impl_->acceptor.local_endpoint().port() << ".\n";
         impl_->keep_accepting();
         return *this;
     }
@@ -86,7 +93,9 @@ namespace wayward {
     }
 
     void Server::Impl::keep_accepting() {
-        next_client = std::make_unique<Client>(*this);
+        assert(next_client == nullptr);
+        next_client = new Client(*this);
+        clients.link_front(next_client);
         acceptor.async_accept(next_client->socket, [this](std::error_code ec) {
             if (ec == asio::error::operation_aborted) {
                 return;
@@ -96,7 +105,7 @@ namespace wayward {
                 std::abort();
             }
             next_client->keep_reading();
-            clients.push_back(std::move(next_client));
+            next_client = nullptr;
             keep_accepting();
         });
     }
@@ -115,14 +124,20 @@ namespace wayward {
             if (ec == asio::error::operation_aborted) {
                 return;
             }
+            if (ec == asio::error::connection_reset) {
+                close();
+                return;
+            }
             if (ec == asio::error::eof) {
                 http_parser_execute(&parser, &parser_settings, nullptr, 0);
                 if (http_should_keep_alive(&parser))
                     keep_reading();
                 else
                     close();
+                return;
             }
-            else if (ec) {
+
+            if (ec) {
                 std::cerr << "socket error: " << ec.message() << "\n";
                 close();
             }
@@ -136,6 +151,10 @@ namespace wayward {
     void Server::Client::keep_writing() {
         auto handler = [this](std::error_code ec, size_t len) {
             if (ec == asio::error::operation_aborted) {
+                return;
+            }
+            if (ec == asio::error::connection_reset) {
+                close();
                 return;
             }
             if (ec == asio::error::eof) {
@@ -168,14 +187,7 @@ namespace wayward {
     void Server::Client::close() {
         Client* dead_client = this;
         auto handler = [dead_client]() {
-            Server::Impl& impl = dead_client->server_impl;
-            auto it = std::find_if(begin(impl.clients), end(impl.clients),
-                                   [dead_client](auto& ptr) { return ptr.get() == dead_client; });
-            if (impl.clients.size() > 1) {
-                auto last = impl.clients.end() - 1;
-                it->swap(*last);
-            }
-            impl.clients.pop_back(); // suicide
+            delete dead_client;
         };
         server_impl.service.post(std::move(handler));
     }
@@ -204,8 +216,9 @@ namespace wayward {
         return 0;
     }
 
-    int Server::Client::on_url(http_parser* parser, const char*, size_t) {
+    int Server::Client::on_url(http_parser* parser, const char* url, size_t len) {
         Client& client = *static_cast<Client*>(parser->data);
+        client.current_request.url = std::string(url, len);
         return 0;
     }
     int Server::Client::on_status(http_parser* parser, const char*, size_t) {

@@ -10,6 +10,7 @@ namespace wayward {
     };
 
     struct Request {
+        std::string url;
         std::map<std::string, std::string> headers;
         std::string body;
     };
