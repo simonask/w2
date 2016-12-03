@@ -10,6 +10,7 @@ namespace wayward {
     };
 
     struct Request {
+        // TODO: Use string_view for all of this
         std::string url;
         std::map<std::string, std::string> headers;
         std::string body;
@@ -17,6 +18,8 @@ namespace wayward {
 
     struct Response {
         Status status;
+
+        // TODO: Use string_view for all of this
         std::map<std::string, std::string> headers;
         std::string body;
     };
