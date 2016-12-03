@@ -11,5 +11,7 @@ int main(int argc, char** argv) {
 
     w::Server server;
     server.listen("::", 3000);
+    server.listen("0.0.0.0", 3001);
+    // server.listen("/tmp/wayward.sock");
     return server.run(app);
 }
