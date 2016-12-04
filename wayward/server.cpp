@@ -10,7 +10,7 @@
 namespace wayward {
     struct Server::ClientBase {
         Server::Impl& server_impl;
-        util::IntrusiveListAnchor<ClientBase> anchor;
+        util::IntrusiveListAnchor anchor;
         asio::ip::tcp::socket socket;
         http_parser parser;
 
@@ -47,7 +47,7 @@ namespace wayward {
 
     struct Server::AcceptorBase {
         Server::Impl& server_impl;
-        util::IntrusiveListAnchor<AcceptorBase> anchor;
+        util::IntrusiveListAnchor anchor;
 
         AcceptorBase(Server::Impl& impl) : server_impl(impl) {}
         virtual ~AcceptorBase() {}

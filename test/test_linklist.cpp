@@ -5,7 +5,8 @@
 using namespace wayward::util;
 
 struct Foo {
-    IntrusiveListAnchor<Foo> anchor;
+    int foo = 123;
+    IntrusiveListAnchor anchor;
 };
 
 TEST(IntrusiveList, CannotBeMovedOrCopied) {
@@ -16,7 +17,7 @@ TEST(IntrusiveList, CannotBeMovedOrCopied) {
     EXPECT_FALSE(std::is_copy_assignable<T>::value);
 }
 
-TEST(IntrusiveList, Link) {
+TEST(IntrusiveList, LinkFront) {
     Foo a, b, c;
     IntrusiveList<Foo, &Foo::anchor> list;
     list.link_front(&a);
@@ -25,7 +26,16 @@ TEST(IntrusiveList, Link) {
     EXPECT_FALSE(list.empty());
 }
 
-TEST(IntrusiveList, Next) {
+TEST(IntrusiveList, LinkBack) {
+    Foo a, b, c;
+    IntrusiveList<Foo, &Foo::anchor> list;
+    list.link_back(&a);
+    list.link_back(&b);
+    list.link_back(&c);
+    EXPECT_FALSE(list.empty());
+}
+
+TEST(IntrusiveList, ForwardIteration) {
     Foo a, b, c;
     IntrusiveList<Foo, &Foo::anchor> list;
     list.link_front(&a);
@@ -39,6 +49,56 @@ TEST(IntrusiveList, Next) {
     EXPECT_EQ(&*p, &a);
     ++p;
     EXPECT_EQ(p, list.end());
+}
+
+TEST(IntrusiveList, ForwardIterationLinkBack) {
+    Foo a, b, c;
+    IntrusiveList<Foo, &Foo::anchor> list;
+    list.link_back(&a);
+    list.link_back(&b);
+    list.link_back(&c);
+    auto p = list.begin();
+    EXPECT_EQ(&*p, &a);
+    ++p;
+    EXPECT_EQ(&*p, &b);
+    ++p;
+    EXPECT_EQ(&*p, &c);
+    ++p;
+    EXPECT_EQ(p, list.end());
+}
+
+
+TEST(IntrusiveList, DecrementIterator) {
+    Foo a, b, c;
+    IntrusiveList<Foo, &Foo::anchor> list;
+    list.link_front(&a);
+    list.link_front(&b);
+    list.link_front(&c);
+    auto p = list.end();
+    --p;
+    EXPECT_EQ(&*p, &a);
+    --p;
+    EXPECT_EQ(&*p, &b);
+    --p;
+    EXPECT_EQ(&*p, &c);
+    --p;
+    EXPECT_EQ(p, list.end());
+}
+
+TEST(IntrusiveList, ReverseIterator) {
+    Foo a, b, c;
+    IntrusiveList<Foo, &Foo::anchor> list;
+    list.link_front(&a);
+    list.link_front(&b);
+    list.link_front(&c);
+    auto p = list.rbegin();
+    EXPECT_EQ(&*p, &a);
+    ++p;
+    EXPECT_EQ(&*p, &b);
+    ++p;
+    EXPECT_EQ(&*p, &c);
+    ++p;
+    EXPECT_EQ(p, list.rend());
 }
 
 TEST(IntrusiveList, UnlinkOnDestruction) {
