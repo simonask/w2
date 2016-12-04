@@ -146,7 +146,7 @@ namespace wayward {
             acceptor.open(endpoint.protocol());
             acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
             acceptor.bind(endpoint);
-            acceptor.listen(10);
+            acceptor.listen();
         }
 
         void close() final {
