@@ -20,6 +20,8 @@ namespace util {
             prev = nullptr;
         }
 
+    private:
+        template <class T, IntrusiveListAnchor T::*> friend struct IntrusiveList;
         IntrusiveListAnchor* next = nullptr;
         IntrusiveListAnchor* prev = nullptr;
     };

@@ -125,8 +125,8 @@ TEST(IntrusiveList, Relink) {
     Foo a;
     list_a.link_front(&a);
     list_a.unlink(&a);
+    EXPECT_TRUE(list_a.empty());
     list_b.link_front(&a);
-    EXPECT_EQ(list_a.begin(), list_a.end());
     EXPECT_EQ(&*list_b.begin(), &a);
 }
 
