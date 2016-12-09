@@ -1,5 +1,6 @@
 set(TESTS
     test_linklist.cpp
+    test_routing.cpp
 )
 
 add_executable(wayward-tests ${TESTS})
