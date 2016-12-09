@@ -4,12 +4,14 @@ set(WAYWARD_HEADERS
     http.hpp
     server.hpp
     util/linklist.hpp
+    util/string_view.hpp
 )
 
 set(WAYWARD_SOURCES
     wayward.cpp
     app.cpp
     server.cpp
+    util/string_view.cpp
 )
 
 add_library(wayward SHARED ${WAYWARD_SOURCES} ${WAYWARD_HEADERS})

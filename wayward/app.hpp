@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <wayward/http.hpp>
+#include <wayward/util/string_view.hpp>
 
 namespace wayward {
     struct WAYWARD_EXPORT App : IRequestResponder {
