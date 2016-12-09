@@ -32,6 +32,7 @@ else()
 endif()
 
 add_library(http_parser ${CMAKE_SOURCE_DIR}/external/http-parser/http_parser.c)
+set_target_properties(http_parser PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(HTTPPARSER_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/http-parser)
 set(HTTPPARSER_LIBS http_parser)
