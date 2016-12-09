@@ -1,10 +1,11 @@
 #include <string>
 #include <memory>
 
+#include <wayward/def.hpp>
 #include <wayward/http.hpp>
 
 namespace wayward {
-    struct Server {
+    struct WAYWARD_EXPORT Server {
         Server();
         ~Server();
 

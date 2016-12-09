@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+#include <wayward/def.hpp>
+
 namespace wayward {
     enum class Status {
         OK = 200,
@@ -24,7 +26,7 @@ namespace wayward {
         std::string body;
     };
 
-    struct IRequestResponder {
+    struct WAYWARD_EXPORT IRequestResponder {
         virtual ~IRequestResponder() {}
 
         // Attention: This function must be thread-safe!

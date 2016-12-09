@@ -6,7 +6,7 @@
 #include <wayward/http.hpp>
 
 namespace wayward {
-    struct App : IRequestResponder {
+    struct WAYWARD_EXPORT App : IRequestResponder {
         App();
         ~App();
 
@@ -20,5 +20,5 @@ namespace wayward {
         std::unique_ptr<Impl> impl_;
     };
 
-    void plain_text(Response&, std::string body);
+    void WAYWARD_EXPORT plain_text(Response&, std::string body);
 }

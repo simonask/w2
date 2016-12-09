@@ -1,7 +1,16 @@
 #include "wayward/server.hpp"
 #include "wayward/util/linklist.hpp"
+#include "config.h"
 
+#if defined(ASIO_FROM_BOOST)
+#include <boost/asio.hpp>
+namespace asio = boost::asio;
+using asio_error_code = boost::system::error_code;
+#else
 #include <asio.hpp>
+using asio_error_code = std::error_code;
+#endif
+
 #include <http_parser.h>
 
 #include <iostream>
@@ -84,7 +93,7 @@ namespace wayward {
         }
 
         void keep_reading() final {
-            auto handler = [this](std::error_code ec, size_t len) {
+            auto handler = [this](asio_error_code ec, size_t len) {
                 if (ec == asio::error::operation_aborted) {
                     return;
                 }
@@ -113,7 +122,7 @@ namespace wayward {
         }
 
         void keep_writing() final {
-            auto handler = [this](std::error_code ec, size_t len) {
+            auto handler = [this](asio_error_code ec, size_t len) {
                 if (ec == asio::error::operation_aborted) {
                     return;
                 }
@@ -157,7 +166,7 @@ namespace wayward {
             assert(next_client == nullptr);
             next_client = new Client<Protocol>(server_impl);
             server_impl.clients.link_front(next_client);
-            acceptor.async_accept(next_client->socket, [this](std::error_code ec) {
+            acceptor.async_accept(next_client->socket, [this](asio_error_code ec) {
                 if (ec == asio::error::operation_aborted) {
                     return;
                 }
@@ -173,16 +182,16 @@ namespace wayward {
     };
 
     const http_parser_settings Server::ClientBase::parser_settings = {
-        .on_message_begin = &Server::ClientBase::on_message_begin,
-        .on_url = &Server::ClientBase::on_url,
-        .on_status = &Server::ClientBase::on_status,
-        .on_header_field = &Server::ClientBase::on_header_field,
-        .on_header_value = &Server::ClientBase::on_header_value,
-        .on_headers_complete = &Server::ClientBase::on_headers_complete,
-        .on_body = &Server::ClientBase::on_body,
-        .on_message_complete = &Server::ClientBase::on_message_complete,
-        .on_chunk_header = &Server::ClientBase::on_chunk_header,
-        .on_chunk_complete = &Server::ClientBase::on_chunk_complete,
+        /*.on_message_begin =*/ &Server::ClientBase::on_message_begin,
+        /*.on_url =*/ &Server::ClientBase::on_url,
+        /*.on_status =*/ &Server::ClientBase::on_status,
+        /*.on_header_field =*/ &Server::ClientBase::on_header_field,
+		/*.on_header_value =*/ &Server::ClientBase::on_header_value,
+        /*.on_headers_complete =*/ &Server::ClientBase::on_headers_complete,
+        /*.on_body =*/ &Server::ClientBase::on_body,
+        /*.on_message_complete =*/ &Server::ClientBase::on_message_complete,
+        /*.on_chunk_header =*/ &Server::ClientBase::on_chunk_header,
+        /*.on_chunk_complete =*/ &Server::ClientBase::on_chunk_complete,
     };
 
     Server::Server() : impl_(new Impl) {}
@@ -214,6 +223,9 @@ namespace wayward {
     }
 
     Server& Server::listen(std::string unix_socket_path) {
+#if defined(_MSC_VER)
+		throw std::runtime_error("UNIX domain sockets not supported on Win32.");
+#else
         asio::local::stream_protocol::endpoint endpoint(unix_socket_path);
         auto acceptor = new Acceptor<asio::local::stream_protocol>(*impl_, endpoint);
         impl_->acceptors.link_front(acceptor);
@@ -221,6 +233,7 @@ namespace wayward {
 
         std::cout << "Wayward Server listening on " << endpoint.path() <<".\n";
         return *this;
+#endif
     }
 
     int Server::run(IRequestResponder& responder) {

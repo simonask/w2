@@ -28,8 +28,7 @@ namespace util {
 
     template <class T, class M>
     constexpr size_t offset_of_member(M T::*member) {
-        T* base = nullptr;
-        return size_t(&(base->*member));
+        return size_t(&(((T*)nullptr)->*member));
     }
 
     template <class T, IntrusiveListAnchor T::*Anchor>
