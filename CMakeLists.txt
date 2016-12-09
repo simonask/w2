@@ -3,7 +3,7 @@ project(wayward VERSION 2.0.0)
 set(CMAKE_CXX_STANDARD 14)
 
 include(ExternalProject)
-include(CheckIncludeFiles)
+include(CheckIncludeFileCXX)
 include(FindBoost)
 
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
@@ -13,15 +13,22 @@ link_libraries(Threads::Threads)
 
 enable_testing()
 
-check_include_files(asio.hpp ASIO_FOUND)
-find_package(Boost REQUIRED)
-if (${Boost_FOUND})
+check_include_file_cxx("asio.hpp" ASIO_FOUND)
+find_package(Boost)
+
+# Prefer ASIO over Boost.ASIO
+if (${ASIO_FOUND})
+    set(ASIO_INCLUDE_DIR "" CACHE STRING "")
+    set(ASIO_LIBRARY DIR "" CACHE STRING "")
+    set(ASIO_LIBRARIES "" CACHE STRING "")
+    set(ASIO_FROM_BOOST "0" CACHE STRING "")
+elseif (${Boost_FOUND})
     set(ASIO_INCLUDE_DIR "${Boost_INCLUDE_DIRS}" CACHE STRING "")
     set(ASIO_LIBRARY_DIR "${Boost_LIBRARY_DIRS}" CACHE STRING "")
-    set(ASIO_LIBRARY "${Boost_ASIO_LIBRARY}" CACHE STRING "")
+    set(ASIO_LIBRARIES "${Boost_ASIO_LIBRARY}" CACHE STRING "")
     set(ASIO_FROM_BOOST "1" CACHE STRING "")
 else()
-    message(FATAL "ASIO or Boost not found in include paths.")
+    message(FATAL_ERROR "ASIO or Boost.ASIO not found in include paths. Try setting BOOST_ROOT, or install ASIO headers.")
 endif()
 
 add_library(http_parser ${CMAKE_SOURCE_DIR}/external/http-parser/http_parser.c)

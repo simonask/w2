@@ -15,5 +15,4 @@ set(WAYWARD_SOURCES
 add_library(wayward SHARED ${WAYWARD_SOURCES} ${WAYWARD_HEADERS})
 add_dependencies(wayward http_parser)
 target_include_directories(wayward PRIVATE ${HTTPPARSER_INCLUDE_DIR})
-target_link_libraries(wayward Threads::Threads)
-target_link_libraries(wayward ${HTTPPARSER_LIBS})
+target_link_libraries(wayward Threads::Threads ${HTTPPARSER_LIBS} ${ASIO_LIBRARIES})
