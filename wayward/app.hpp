@@ -8,10 +8,12 @@
 
 namespace wayward {
     struct WAYWARD_EXPORT App : IRequestResponder {
+        using Handler = void(Request&, Response&);
+
         App();
         ~App();
 
-        void get(const char* path, std::function<void(Request&, Response&)> handler);
+        void get(const char* path, std::function<Handler> handler);
 
         // IRequestResponder
         void respond(Request&, Response&) override;

@@ -13,19 +13,20 @@ link_libraries(Threads::Threads)
 
 enable_testing()
 
+set(CMAKE_REQUIRED_INCLUDES ${ASIO_ROOT}/include)
 check_include_file_cxx("asio.hpp" ASIO_FOUND)
 find_package(Boost)
 
 # Prefer ASIO over Boost.ASIO
 if (${ASIO_FOUND})
-    set(ASIO_INCLUDE_DIR "" CACHE STRING "")
-    set(ASIO_LIBRARY DIR "" CACHE STRING "")
+    set(ASIO_INCLUDE_DIR "${ASIO_ROOT}/include" CACHE STRING "")
+    set(ASIO_LIBRARY DIR "${ASIO_ROOT}/lib" CACHE STRING "")
     set(ASIO_LIBRARIES "" CACHE STRING "")
     set(ASIO_FROM_BOOST "0" CACHE STRING "")
 elseif (${Boost_FOUND})
     set(ASIO_INCLUDE_DIR "${Boost_INCLUDE_DIRS}" CACHE STRING "")
     set(ASIO_LIBRARY_DIR "${Boost_LIBRARY_DIRS}" CACHE STRING "")
-    set(ASIO_LIBRARIES "${Boost_ASIO_LIBRARY}" CACHE STRING "")
+    set(ASIO_LIBRARIES "${Boost_SYSTEM_LIBRARY}" CACHE STRING "")
     set(ASIO_FROM_BOOST "1" CACHE STRING "")
 else()
     message(FATAL_ERROR "ASIO or Boost.ASIO not found in include paths. Try setting BOOST_ROOT, or install ASIO headers.")

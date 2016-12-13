@@ -11,10 +11,19 @@ namespace wayward {
         InternalServerError = 500,
     };
 
+    enum class Method {
+        Get,
+        Post,
+        Put,
+        // etc.
+    };
+
     struct Request {
         // TODO: Use string_view for all of this
+        Method method;
         std::string url;
         std::map<std::string, std::string> headers;
+        std::map<std::string, std::string> params;
         std::string body;
     };
 
