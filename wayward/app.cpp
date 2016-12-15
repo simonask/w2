@@ -92,7 +92,7 @@ namespace wayward {
 
         void install_handler(Method method, StringView path, std::function<Handler> handler) {
             auto it = path_matchers.find(method);
-            if (it != path_matchers.end()) {
+            if (it == path_matchers.end()) {
                 it = path_matchers.insert(std::make_pair(method, PathMatchers{})).first;
             }
             PathMatchers& matchers = it->second;
