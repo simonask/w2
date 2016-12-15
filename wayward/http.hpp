@@ -8,6 +8,7 @@
 namespace wayward {
     enum class Status {
         OK = 200,
+        NotFound = 404,
         InternalServerError = 500,
     };
 

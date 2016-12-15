@@ -116,7 +116,7 @@ namespace wayward {
     App::App() : impl_(new Impl) {}
     App::~App() {}
 
-    void App::get(const char* cpath, std::function<void(Request&, Response&)> handler) {
+    void App::get(const char* cpath, std::function<Handler> handler) {
         impl_->install_handler(Method::Get, cpath, std::move(handler));
     }
 
@@ -124,7 +124,9 @@ namespace wayward {
         Path components = split_path_components(req.url);
         auto it = impl_->path_matchers.find(req.method);
         if (it == impl_->path_matchers.end()) {
-            throw std::runtime_error{"404"}; // TODO
+            // TODO: Custom error handler
+            not_found(res);
+            return;
         }
         for (auto& matcher: it->second) {
             PathMatcher& m = std::get<0>(matcher);
@@ -135,12 +137,18 @@ namespace wayward {
                 return;
             }
         }
-        throw std::runtime_error{"404"};
+        not_found(res);
     }
 
     void plain_text(Response& res, std::string body) {
         res.headers["Content-Type"] = "text/plain";
         res.status = Status::OK;
         res.body = std::move(body);
+    }
+
+    void not_found(Response& res) {
+        res.status = Status::NotFound;
+        res.body = "Not Found";
+        res.headers["Content-Type"] = "text/plain";
     }
 }

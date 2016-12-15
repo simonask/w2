@@ -24,4 +24,5 @@ namespace wayward {
     };
 
     void WAYWARD_EXPORT plain_text(Response&, std::string body);
+    void WAYWARD_EXPORT not_found(Response&);
 }
