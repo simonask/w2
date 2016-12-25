@@ -7,6 +7,7 @@ namespace w = wayward;
 namespace {
     w::Request make_request(std::string path, std::map<std::string, std::string> headers = {}, std::string body = "") {
         w::Request req;
+        req.method = w::Method::Get;
         req.url = std::move(path);
         req.headers = std::move(headers);
         req.body = std::move(body);
@@ -48,3 +49,14 @@ TEST(Routing, Basic) {
     EXPECT_FALSE(get_root);
     EXPECT_FALSE(get_foo);
 }
+
+TEST(Routing, Capture) {
+    w::App app;
+    std::string id;
+    app.get("/foo/:id", [&](auto& req, auto& res) {
+        id = req.params["id"];
+    });
+    auto res = respond(app, make_request("/foo/123"));
+    EXPECT_EQ(id, "123");
+}
+
