@@ -16,7 +16,7 @@ namespace {
                 result.emplace_back(path.data() + p, path.size() - p);
                 break;
             } else {
-                StringView component{path.data() + p, p - q};
+                StringView component{path.data() + p, q - p};
                 if (component.size() != 0) {
                     result.push_back(component);
                 }
