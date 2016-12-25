@@ -85,7 +85,6 @@ namespace {
 }
 
 namespace wayward {
-
     struct App::Impl {
         using PathMatchers = std::vector<std::tuple<PathMatcher, std::function<Handler>>>;
         std::map<Method, PathMatchers> path_matchers;
@@ -112,6 +111,8 @@ namespace wayward {
             matchers.emplace_back(std::move(matcher), std::move(handler));
         }
     };
+
+	template class std::unique_ptr<App::Impl>;
 
     App::App() : impl_(new Impl) {}
     App::~App() {}

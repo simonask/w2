@@ -23,6 +23,9 @@ namespace wayward {
         std::unique_ptr<Impl> impl_;
     };
 
-    void WAYWARD_EXPORT plain_text(Response&, std::string body);
+	void WAYWARD_EXPORT plain_text(Response&, std::string body);
     void WAYWARD_EXPORT not_found(Response&);
+
+	// DLL-linkage for MSVC:
+	template class WAYWARD_EXPORT std::unique_ptr<App::Impl>;
 }
