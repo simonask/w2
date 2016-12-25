@@ -117,6 +117,8 @@ namespace literals {
 constexpr StringView StringView::substr(size_t pos, size_t count) const {
     if (pos > size())
         throw std::out_of_range("pos > size()");
+    if (count == npos)
+        count = size() - pos;
     if (pos + count > size())
         throw std::out_of_range("pos + count > size()");
     return StringView{s_ + pos, count};
