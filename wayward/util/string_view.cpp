@@ -2,6 +2,7 @@
 
 #include <string>
 #include <algorithm> // std::lexicographical_compare, std::find
+#include <ostream>
 
 namespace wayward {
 namespace util {
@@ -23,6 +24,11 @@ size_t StringView::find(char c, size_t pos) const {
     if (it == end())
         return npos;
     return it - begin();
+}
+
+std::ostream& operator<<(std::ostream& os, StringView str) {
+    os.write(str.data(), str.size());
+    return os;
 }
 
 } // namespace util
