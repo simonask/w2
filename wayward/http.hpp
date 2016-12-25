@@ -21,7 +21,7 @@ namespace wayward {
 
     struct Request {
         // TODO: Use string_view for all of this
-        Method method;
+        Method method = Method::Get;
         std::string url;
         std::map<std::string, std::string> headers;
         std::map<std::string, std::string> params;
